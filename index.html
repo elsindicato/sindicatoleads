@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leads · El Sindicato de Monstruos</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:#0d1410; --surface:#131a16; --surface2:#1c2620;
+  --border:#263020; --accent:#2d7a4a; --accent2:#C9A227;
+  --green:#22c55e; --yellow:#f59e0b; --red:#ef4444;
+  --purple:#a855f7; --teal:#14b8a6;
+  --text:#e2e8f0; --muted:#5a7060; --muted2:#8aab90;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:24px 16px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.header-left h1{font-size:1.35rem;font-weight:700;letter-spacing:-0.02em}
+.header-left h1 span{color:var(--accent2)}
+.header-left p{font-size:0.75rem;color:var(--muted2);margin-top:3px}
+.header-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:opacity .15s;font-family:'Inter',sans-serif}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-gold{background:var(--accent2);color:#1a1400}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted2);padding:8px 14px;border-radius:8px;font-size:0.78rem;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.stat-bar{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;flex:1;min-width:130px;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
+.stat.s1::before{background:var(--accent2)}
+.stat.s2::before{background:var(--accent)}
+.stat.s3::before{background:#22c55e}
+.stat.s4::before{background:#a855f7}
+.stat-label{font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.stat-val{font-size:1.7rem;font-weight:700;letter-spacing:-.03em}
+.stat.s1 .stat-val{color:var(--accent2)}
+.stat.s2 .stat-val{color:var(--accent)}
+.stat.s3 .stat-val{color:#22c55e}
+.stat.s4 .stat-val{color:#a855f7}
+.stat-sub{font-size:0.68rem;color:var(--muted2);margin-top:2px}
+.shows-breakdown{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:8px;margin-bottom:24px}
+.show-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
+.show-card:hover,.show-card.sel{border-color:var(--accent2)}
+.show-card.sel{background:#C9A22710}
+.show-card-name{font-size:0.78rem;font-weight:600;margin-bottom:4px}
+.show-card-stats{font-size:0.68rem;color:var(--muted2)}
+.show-card-bar-wrap{height:3px;background:var(--border);border-radius:2px;margin-top:7px}
+.show-card-bar{height:3px;border-radius:2px;background:var(--accent2);transition:width .4s}
+.filters{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+select,input[type="text"]{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:8px;font-size:0.78rem;font-family:'Inter',sans-serif;cursor:pointer;outline:none}
+select:focus,input[type="text"]:focus{border-color:var(--accent)}
+input[type="text"]{width:180px}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:0.78rem}
+thead tr{background:var(--surface2);border-bottom:1px solid var(--border)}
+th{padding:10px 14px;text-align:left;font-weight:600;color:var(--muted2);font-size:0.68rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+td{padding:11px 14px;color:var(--text);white-space:nowrap}
+td.name{font-weight:600}
+.empty{text-align:center;padding:48px 24px;color:var(--muted);font-size:.85rem}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:600;white-space:nowrap}
+.badge-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.canal-Meta{background:#1a1f3a;color:#818cf8}.canal-Meta .badge-dot{background:#818cf8}
+.canal-Email{background:#1a2a3a;color:#38bdf8}.canal-Email .badge-dot{background:#38bdf8}
+.canal-WhatsApp{background:#0d2318;color:#25d366}.canal-WhatsApp .badge-dot{background:#25d366}
+.canal-Otro{background:#2a2a2a;color:#94a3b8}.canal-Otro .badge-dot{background:#94a3b8}
+.ppto-Sin_enviar{background:#2a2010;color:#f59e0b}
+.ppto-Enviado{background:#1a2d3a;color:#38bdf8}
+.ppto-Aceptado{background:#1a2d1a;color:#22c55e}
+.ppto-Rechazado{background:#2a1a1a;color:#ef4444}
+.estado-Nuevo{background:#1e2a3a;color:#60a5fa}
+.estado-Contactado{background:#2a2a1e;color:#fbbf24}
+.estado-Propuesta_enviada{background:#1a2d3a;color:#38bdf8}
+.estado-Negociando{background:#2a1e2a;color:#c084fc}
+.estado-Contratado{background:#1a2d1a;color:#22c55e}
+.estado-Descartado{background:#2a1e1e;color:#f87171}
+.resp-Sin_contactar{background:#1e2020;color:#5a7060}
+.resp-Sin_respuesta{background:#2d1414;color:#f87171;border:1px solid #ef444433}
+.resp-Respondio{background:#1a2d1a;color:#22c55e}
+tbody tr.no-reply td:first-child{border-left:3px solid #ef4444}
+.lead-card.no-reply{border-left:3px solid #ef4444}
+.cards-wrap{display:none;flex-direction:column;gap:10px}
+.lead-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:border-color .15s}
+.lead-card:active{background:var(--surface2)}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px}
+.card-name{font-weight:700;font-size:.95rem}
+.card-sub{font-size:.73rem;color:var(--muted2);margin-top:2px}
+.card-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.card-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--border);font-size:.72rem;color:var(--muted2)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto}
+.modal h2{font-size:1.1rem;font-weight:700;margin-bottom:22px;letter-spacing:-.02em}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:.7rem;color:var(--muted2);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.form-group select,.form-group input,.form-group textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-size:.82rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;width:100%}
+.form-group select:focus,.form-group input:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:72px}
+.show-selector{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:7px}
+.show-opt{border:1px solid var(--border);background:var(--surface2);border-radius:8px;padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:7px;font-size:.78rem;font-weight:500;color:var(--muted2);transition:all .15s;user-select:none}
+.show-opt:hover{border-color:var(--accent2)}
+.show-opt.sel{border-color:var(--accent2);background:#C9A22714;color:var(--text)}
+.show-opt .chk{width:14px;height:14px;border-radius:3px;border:1.5px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem}
+.show-opt.sel .chk{background:var(--accent2);border-color:var(--accent2);color:#1a1400}
+.dates-container{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.date-tag{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:.76rem}
+.date-tag-del{cursor:pointer;color:var(--muted);font-size:.8rem;line-height:1;padding:0 2px}
+.date-tag-del:hover{color:var(--red)}
+.date-add-row{display:flex;gap:6px;margin-top:6px;align-items:center}
+.date-add-row input[type="date"]{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:.8rem;font-family:'Inter',sans-serif;outline:none;flex:1}
+.date-add-row input[type="date"]:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.ficha-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:flex-end;justify-content:center}
+.ficha-overlay.open{display:flex}
+.ficha{background:var(--surface);border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.ficha-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0}
+.ficha-header{padding:18px 24px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.ficha-nombre{font-size:1.2rem;font-weight:700;letter-spacing:-.02em}
+.ficha-actions{display:flex;gap:8px;flex-shrink:0}
+.ficha-body{padding:20px 24px}
+.ficha-section{margin-bottom:20px}
+.ficha-section-title{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:10px}
+.ficha-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ficha-field{background:var(--surface2);border-radius:10px;padding:10px 14px}
+.ficha-field.full{grid-column:1/-1}
+.ficha-field-label{font-size:.65rem;color:var(--muted2);margin-bottom:4px}
+.ficha-field-value{font-size:.83rem;font-weight:500;color:var(--text);word-break:break-word}
+.ficha-field-value a{color:var(--accent2);text-decoration:none}
+.ficha-notas{background:var(--surface2);border-radius:10px;padding:12px 14px;font-size:.82rem;line-height:1.6;color:var(--text);white-space:pre-wrap}
+.shows-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.show-tag{background:#C9A22714;border:1px solid #C9A22733;color:var(--accent2);border-radius:5px;padding:2px 8px;font-size:.72rem;font-weight:600}
+.dates-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.date-chip{background:#1a2d1a;border:1px solid #22c55e33;color:#22c55e;border-radius:5px;padding:2px 8px;font-size:.72rem}
+.setup-banner{background:linear-gradient(135deg,#1a2d20,#131a16);border:1px solid #2d7a4a44;border-radius:14px;padding:22px 26px;margin-bottom:24px}
+.setup-banner h2{font-size:.95rem;font-weight:700;color:var(--accent2);margin-bottom:5px}
+.setup-banner p{font-size:.78rem;color:var(--muted2);line-height:1.6;margin-bottom:12px}
+.setup-row{display:flex;gap:8px;flex-wrap:wrap}
+.setup-row input{flex:1;min-width:260px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;font-size:.82rem;font-family:'Inter',sans-serif;outline:none}
+.setup-row input:focus{border-color:var(--accent)}
+.setup-banner.hidden{display:none}
+.sync-status{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted2);background:var(--surface);border:1px solid var(--border);padding:5px 12px;border-radius:20px;cursor:pointer}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.sync-dot.ok{background:var(--green);box-shadow:0 0 6px #22c55e88}
+.sync-dot.loading{background:var(--yellow);animation:pulse 1s infinite}
+.sync-dot.error{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.zona-banner{background:linear-gradient(135deg,#1a2d20,#1c2620);border:1px solid var(--accent);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:none;align-items:center;gap:14px;flex-wrap:wrap}
+.zona-banner.visible{display:flex}
+.zona-banner-info{flex:1}
+.zona-banner-title{font-size:.78rem;font-weight:700;color:var(--accent2)}
+.zona-banner-sub{font-size:.7rem;color:var(--muted2);margin-top:2px}
+.campana-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;align-items:center;justify-content:center;padding:16px}
+.campana-overlay.open{display:flex}
+.campana-modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto}
+.campana-modal h2{font-size:1.05rem;font-weight:700;margin-bottom:6px}
+.campana-modal p{font-size:.78rem;color:var(--muted2);margin-bottom:18px}
+.campana-contacts{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;max-height:200px;overflow-y:auto}
+.campana-contact{background:var(--surface2);border-radius:8px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.8rem}
+.campana-contact-name{font-weight:600}
+.campana-contact-phone{color:var(--muted2);font-size:.74rem}
+.campana-contact-resp{font-size:.68rem}
+.campana-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:10px;font-size:.82rem;font-family:"Inter",sans-serif;resize:vertical;min-height:140px;outline:none;line-height:1.6;margin-bottom:14px}
+.campana-textarea:focus{border-color:var(--accent)}
+.campana-actions{display:flex;gap:8px;flex-wrap:wrap}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:.82rem;color:var(--text);z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none;max-width:300px}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.success{border-color:var(--green)}
+#toast.error{border-color:var(--red)}
+@media(max-width:700px){
+  body{padding:14px 10px}
+  .header-left h1{font-size:1.1rem}
+  .stat-bar{gap:6px}
+  .stat{padding:11px 13px}
+  .stat-val{font-size:1.35rem}
+  .shows-breakdown{grid-template-columns:1fr 1fr}
+  .filters{gap:6px}
+  .filters select{font-size:.73rem;padding:6px 8px}
+  #filter-search{width:100%}
+  .table-wrap{display:none}
+  .cards-wrap{display:flex}
+  .form-grid{grid-template-columns:1fr}
+  .form-group.full{grid-column:1}
+  .ficha-grid{grid-template-columns:1fr}
+  .ficha-field.full{grid-column:1}
+}
+
+.setup-banner{background:linear-gradient(135deg,#162a1c,#131a16);border:1px solid #2d7a4a55;border-radius:14px;padding:22px 26px;margin-bottom:24px}
+.setup-banner h2{font-size:.95rem;font-weight:700;color:var(--accent2);margin-bottom:5px}
+.setup-banner p{font-size:.78rem;color:var(--muted2);line-height:1.6;margin-bottom:12px}
+.setup-row{display:flex;gap:8px;flex-wrap:wrap}
+.setup-row input{flex:1;min-width:260px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:8px;font-size:.82rem;font-family:'Inter',sans-serif;outline:none}
+.setup-row input:focus{border-color:var(--accent)}
+.setup-banner.hidden{display:none}
+.sync-pill{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted2);background:var(--surface);border:1px solid var(--border);padding:5px 12px;border-radius:20px;cursor:pointer;transition:border-color .15s}
+.sync-pill:hover{border-color:var(--accent)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.sync-dot.ok{background:var(--green);box-shadow:0 0 6px #22c55e88}
+.sync-dot.loading{background:var(--yellow);animation:pulse 1s infinite}
+.sync-dot.error{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+
+
+<!-- SETUP BANNER -->
+<div id="setup-banner" class="setup-banner">
+  <h2>🔗 Conectar con Google Sheets</h2>
+  <p>Pega la URL de tu Google Apps Script para sincronizar los leads en la nube y acceder desde cualquier dispositivo.</p>
+  <div class="setup-row">
+    <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/…/exec">
+    <button class="btn btn-gold" onclick="saveScriptUrl()">Conectar</button>
+  </div>
+</div>
+
+<!-- SETUP BANNER -->
+<div id="setup-banner" class="setup-banner">
+  <h2>🔗 Conectar con Google Sheets</h2>
+  <p>Pega la URL de tu Apps Script para sincronizar en la nube y usar la app desde el móvil u otro dispositivo.</p>
+  <div class="setup-row">
+    <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/…/exec">
+    <button class="btn btn-gold" onclick="saveScriptUrl()">Conectar</button>
+  </div>
+</div>
+
+<div class="header">
+  <div class="header-left">
+    <h1>🎭 <span>El Sindicato</span> · Leads</h1>
+    <p id="header-sub">Cargando datos…</p>
+  </div>
+  <div class="header-right">
+    <div class="sync-status" onclick="loadLeads()" title="Pulsa para sincronizar">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-text">Sin conectar</span>
+    </div>
+    <button class="btn-outline" onclick="exportCSV()">⬇ CSV</button>
+    <button class="btn btn-gold" onclick="openModal(null)">+ Nuevo lead</button>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="stat-bar">
+  <div class="stat s1"><div class="stat-label">Total leads</div><div class="stat-val" id="kpi-total">0</div><div class="stat-sub" id="kpi-sub">en pipeline</div></div>
+  <div class="stat s2"><div class="stat-label">Presup. enviados</div><div class="stat-val" id="kpi-env">0</div><div class="stat-sub">pendientes de respuesta</div></div>
+  <div class="stat s3"><div class="stat-label">Aceptados</div><div class="stat-val" id="kpi-acep">0</div><div class="stat-sub">contratos cerrados</div></div>
+  <div class="stat s4"><div class="stat-label">Sin respuesta</div><div class="stat-val" id="kpi-sinresp">0</div><div class="stat-sub">ignoraron tu mensaje</div></div>
+  <div class="stat" style="--c:#22c55e" ><div class="stat-label" style="color:var(--muted)">Conversión</div><div class="stat-val" id="kpi-conv" style="color:#22c55e">—</div><div class="stat-sub">sobre total leads</div></div>
+</div>
+
+<!-- Breakdown por espectáculo -->
+<div class="shows-breakdown" id="shows-breakdown"></div>
+
+<!-- Filtros -->
+<div class="filters">
+  <select id="filter-show" onchange="renderAll()"><option value="">Todos los shows</option></select>
+  <select id="filter-canal" onchange="renderAll()">
+    <option value="">Todos los canales</option>
+    <option>Meta</option><option>Email</option><option>WhatsApp</option><option>Otro</option>
+  </select>
+  <select id="filter-ppto" onchange="renderAll()">
+    <option value="">Todos presupuestos</option>
+    <option value="Sin enviar">Sin enviar</option>
+    <option value="Enviado">Enviado</option>
+    <option value="Aceptado">Aceptado</option>
+    <option value="Rechazado">Rechazado</option>
+  </select>
+  <select id="filter-tipo" onchange="renderAll()">
+    <option value="">Todos los tipos</option>
+    <option>Festival / Ayuntamiento</option>
+    <option>Cabalgata de Reyes</option>
+    <option>Evento corporativo</option>
+    <option>Evento privado</option>
+    <option>Otro</option>
+  </select>
+  <select id="filter-resp" onchange="renderAll()">
+    <option value="">Todas las respuestas</option>
+    <option value="Sin contactar">Sin contactar</option>
+    <option value="Sin respuesta">📵 Sin respuesta</option>
+    <option value="Respondió ✓">✅ Respondió</option>
+  </select>
+  <select id="filter-ccaa" onchange="renderAll()">
+    <option value="">Todas las CCAA</option>
+    <option>Andalucía</option><option>Aragón</option><option>Asturias</option>
+    <option>Baleares</option><option>Canarias</option><option>Cantabria</option>
+    <option>Castilla-La Mancha</option><option>Castilla y León</option><option>Cataluña</option>
+    <option>Comunidad de Madrid</option><option>Comunidad Valenciana</option><option>Extremadura</option>
+    <option>Galicia</option><option>La Rioja</option><option>Navarra</option>
+    <option>País Vasco</option><option>Región de Murcia</option>
+  </select>
+  <input type="text" id="filter-search" placeholder="🔍 Buscar nombre…" oninput="renderAll()">
+</div>
+
+<!-- Zona banner -->
+<div class="zona-banner" id="zona-banner">
+  <span style="font-size:1.6rem">📍</span>
+  <div class="zona-banner-info">
+    <div class="zona-banner-title" id="zona-banner-title">Zona activa</div>
+    <div class="zona-banner-sub" id="zona-banner-sub">Filtrando contactos</div>
+  </div>
+  <button class="btn btn-gold" onclick="openCampana()">📢 Campaña de zona</button>
+</div>
+
+<!-- Tabla desktop -->
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Respuesta</th>
+        <th>Teléfono</th>
+        <th>Tipo de evento</th>
+        <th>Canal</th>
+        <th>Espectáculos</th>
+        <th>Fechas</th>
+        <th>Presupuesto</th>
+        <th>Estado</th>
+        <th>Localidad / CCAA</th>
+      </tr>
+    </thead>
+    <tbody id="leads-tbody"></tbody>
+  </table>
+</div>
+
+<!-- Cards mobile -->
+<div class="cards-wrap" id="leads-cards"></div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MODAL CAMPAÑA DE ZONA -->
+<div class="campana-overlay" id="campana-overlay" onclick="closeCampanaOutside(event)">
+  <div class="campana-modal">
+    <h2>📢 Campaña de zona</h2>
+    <p id="campana-desc">Genera un mensaje personalizado para todos los contactos de esta zona.</p>
+    <div class="campana-contacts" id="campana-contacts"></div>
+    <label style="font-size:.7rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Mensaje a enviar</label>
+    <textarea class="campana-textarea" id="campana-msg"></textarea>
+    <div style="font-size:.7rem;color:var(--muted2);margin-bottom:14px">Usa <strong style="color:var(--accent2)">[nombre]</strong> para personalizar con el nombre de cada contacto.</div>
+    <div class="campana-actions">
+      <button class="btn-outline" onclick="closeCampana()">Cerrar</button>
+      <button class="btn-outline" onclick="copyMsgTemplate()">📋 Copiar plantilla</button>
+      <button class="btn btn-gold" onclick="copyAllMessages()">📱 Copiar todos los mensajes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ MODAL LEAD ══════════════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h2 id="modal-title">➕ Nuevo lead</h2>
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>Nombre completo *</label>
+        <input type="text" id="f-nombre" placeholder="Ana Martínez" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="tel" id="f-telefono" placeholder="612 345 678">
+      </div>
+      <div class="form-group full">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="ana@festival.com">
+      </div>
+
+      <div class="form-group">
+        <label>Tipo de evento *</label>
+        <select id="f-tipo">
+          <option value="">— Selecciona —</option>
+          <option>Festival / Ayuntamiento</option>
+          <option>Cabalgata de Reyes</option>
+          <option>Evento corporativo</option>
+          <option>Evento privado</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Localidad (ciudad)</label>
+        <input type="text" id="f-localidad" placeholder="Valencia">
+      </div>
+      <div class="form-group">
+        <label>Comunidad Autónoma</label>
+        <select id="f-ccaa">
+          <option value="">— Selecciona —</option>
+          <option>Andalucía</option>
+          <option>Aragón</option>
+          <option>Asturias</option>
+          <option>Baleares</option>
+          <option>Canarias</option>
+          <option>Cantabria</option>
+          <option>Castilla-La Mancha</option>
+          <option>Castilla y León</option>
+          <option>Cataluña</option>
+          <option>Comunidad de Madrid</option>
+          <option>Comunidad Valenciana</option>
+          <option>Extremadura</option>
+          <option>Galicia</option>
+          <option>La Rioja</option>
+          <option>Navarra</option>
+          <option>País Vasco</option>
+          <option>Región de Murcia</option>
+        </select>
+      </div>
+
+      <div class="form-group full">
+        <label>Espectáculos de interés (selecciona uno o más) *</label>
+        <div class="show-selector" id="show-selector"></div>
+      </div>
+
+      <div class="form-group full">
+        <label>Fechas del espectáculo (puedes añadir varias)</label>
+        <div class="dates-container" id="dates-container"></div>
+        <div class="date-add-row">
+          <input type="date" id="date-input">
+          <button class="btn-outline" onclick="addDate()">+ Añadir fecha</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Canal de entrada *</label>
+        <select id="f-canal">
+          <option>Meta</option><option>Email</option>
+          <option>WhatsApp</option><option>Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Estado del lead</label>
+        <select id="f-estado">
+          <option>Nuevo</option>
+          <option>Contactado</option>
+          <option>Propuesta enviada</option>
+          <option>Negociando</option>
+          <option>Contratado</option>
+          <option>Descartado</option>
+        </select>
+      </div>
+
+      <div class="form-group full">
+        <label>¿Respondió el lead?</label>
+        <select id="f-resp">
+          <option value="Sin contactar">Sin contactar aún</option>
+          <option value="Sin respuesta">📵 Mensaje enviado — sin respuesta</option>
+          <option value="Respondió ✓">✅ Respondió</option>
+        </select>
+      </div>
+
+      <div class="form-group full">
+        <label>Presupuesto</label>
+        <select id="f-ppto">
+          <option>Sin enviar</option>
+          <option>Enviado</option>
+          <option>Aceptado</option>
+          <option>Rechazado</option>
+        </select>
+      </div>
+
+      <div class="form-group full">
+        <label>Notas</label>
+        <textarea id="f-notas" placeholder="Ej. Muy interesado en Los Orgos para julio, presupuesto ~2.000€…"></textarea>
+      </div>
+
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" id="btn-del" onclick="deleteLead()" style="display:none;color:var(--red);border-color:var(--red)">🗑 Eliminar</button>
+      <button class="btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-gold" id="btn-save" onclick="saveLead()">Guardar lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ FICHA LEAD ══════════════════════ -->
+<div class="ficha-overlay" id="ficha-overlay" onclick="closeFichaOutside(event)">
+  <div class="ficha">
+    <div class="ficha-handle"></div>
+    <div class="ficha-header">
+      <div>
+        <div class="ficha-nombre" id="ficha-nombre">—</div>
+        <div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap" id="ficha-badges"></div>
+      </div>
+      <div class="ficha-actions">
+        <button class="btn-outline" onclick="closeFicha()">✕</button>
+        <button class="btn btn-gold" onclick="editFromFicha()">✏ Editar</button>
+      </div>
+    </div>
+    <div class="ficha-body" id="ficha-body"></div>
+  </div>
+</div>
+
+
+<script>
+
+// ─── CONFIG ───────────────────────────────────────────────────
+const LS_KEY_SCRIPT = 'sdm_script_url_v1';
+const LS_KEY        = 'sdm_leads_v2';
+let scriptUrl = localStorage.getItem(LS_KEY_SCRIPT) || '';
+let leads     = [];
+let editId    = null;
+let selectedShows = [];
+let selectedDates = [];
+let fichaId   = null;
+let isSaving  = false;
+
+// ─── SHOWS CATALOG ────────────────────────────────────────────
+const SHOWS = [
+  {id:'orgos',     name:'Los Orgos',              icon:'🟡'},
+  {id:'chocolitos',name:'Los Chocolitos',          icon:'♻️'},
+  {id:'extintos',  name:'Los Extintos',            icon:'🦅'},
+  {id:'luminodrags',name:'Luminodrags',            icon:'🐉'},
+  {id:'lago',      name:'Los Monstruos del Lago',  icon:'🟣'},
+  {id:'luminolife',name:'Luminolife',              icon:'💡'},
+];
+const SHOW_COLORS=['#C9A227','#22c55e','#f87171','#a855f7','#38bdf8','#fb923c'];
+const RESP_CLS={
+  'Sin contactar':'resp-Sin_contactar',
+  'Sin respuesta':'resp-Sin_respuesta',
+  'Respondió ✓':'resp-Respondio'
+};
+const PPTO_CLS={
+  'Sin enviar':'ppto-Sin_enviar','Enviado':'ppto-Enviado',
+  'Aceptado':'ppto-Aceptado','Rechazado':'ppto-Rechazado'
+};
+const ESTADO_CLS={
+  'Nuevo':'estado-Nuevo','Contactado':'estado-Contactado',
+  'Propuesta enviada':'estado-Propuesta_enviada','Negociando':'estado-Negociando',
+  'Contratado':'estado-Contratado','Descartado':'estado-Descartado'
+};
+
+// ─── SYNC STATUS ──────────────────────────────────────────────
+function setSyncStatus(state, text){
+  document.getElementById('sync-dot').className='sync-dot '+state;
+  document.getElementById('sync-text').textContent=text;
+}
+
+// ─── SETUP ────────────────────────────────────────────────────
+function saveScriptUrl(){
+  const val=document.getElementById('script-url-input').value.trim();
+  if(!val.startsWith('https://script.google.com')){
+    showToast('URL inválida','error'); return;
+  }
+  scriptUrl=val;
+  localStorage.setItem(LS_KEY_SCRIPT,scriptUrl);
+  document.getElementById('setup-banner').classList.add('hidden');
+  showToast('✅ Conectado. Cargando leads…','success');
+  loadLeads();
+}
+
+// ─── CACHE ────────────────────────────────────────────────────
+function saveCache(){ localStorage.setItem(LS_KEY,JSON.stringify(leads)); }
+function readCache(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch(e){ return []; }
+}
+
+// ─── LOAD FROM SHEETS ─────────────────────────────────────────
+async function loadLeads(){
+  leads=readCache(); renderAll(); // instant local render
+  if(!scriptUrl){ setSyncStatus('error','Sin conectar'); return; }
+  setSyncStatus('loading','Sincronizando…');
+  try{
+    const ctrl=new AbortController();
+    const tid=setTimeout(()=>ctrl.abort(),14000);
+    const res=await fetch(scriptUrl+'?action=getLeads',{signal:ctrl.signal});
+    clearTimeout(tid);
+    const data=await res.json();
+    if(data.ok){
+      leads=data.leads||[];
+      saveCache();
+      const t=new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+      setSyncStatus('ok','Sync · '+t);
+      renderAll();
+    } else { setSyncStatus('error',data.error||'Error'); showToast('❌ '+data.error,'error'); }
+  } catch(e){
+    setSyncStatus('error',e.name==='AbortError'?'Tiempo agotado':'Sin conexión');
+    showToast(e.name==='AbortError'?'⏱ Tiempo agotado':'❌ Sin conexión al servidor','error');
+  }
+}
+
+// ─── DATE HELPERS ─────────────────────────────────────────────
+function fmtDate(d){
+  if(!d)return '—';
+  const [y,m,dd]=d.split('-');
+  const M=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${parseInt(dd)} ${M[parseInt(m)-1]} ${y}`;
+}
+
+// ─── SHOW SELECTOR (modal) ────────────────────────────────────
+function renderShowSelector(){
+  document.getElementById('show-selector').innerHTML=SHOWS.map(s=>`
+    <div class="show-opt ${selectedShows.includes(s.id)?'sel':''}" onclick="toggleShow('${s.id}')">
+      <div class="chk">${selectedShows.includes(s.id)?'✓':''}</div>
+      <span>${s.icon} ${s.name}</span>
+    </div>`).join('');
+}
+function toggleShow(id){
+  selectedShows=selectedShows.includes(id)?selectedShows.filter(x=>x!==id):[...selectedShows,id];
+  renderShowSelector();
+}
+
+// ─── DATE PICKER ──────────────────────────────────────────────
+function renderDates(){
+  document.getElementById('dates-container').innerHTML=selectedDates.map((d,i)=>
+    `<span class="date-tag">📅 ${fmtDate(d)}<span class="date-tag-del" onclick="removeDate(${i})">✕</span></span>`
+  ).join('');
+}
+function addDate(){
+  const v=document.getElementById('date-input').value;
+  if(!v){showToast('Selecciona una fecha primero','error');return;}
+  if(selectedDates.includes(v)){showToast('Fecha ya añadida','error');return;}
+  selectedDates=[...selectedDates,v].sort();
+  document.getElementById('date-input').value='';
+  renderDates();
+}
+function removeDate(i){selectedDates.splice(i,1);renderDates();}
+
+// ─── MODAL ────────────────────────────────────────────────────
+function openModal(id){
+  editId=id; selectedShows=[]; selectedDates=[];
+  const l=id?leads.find(x=>x.id===id):null;
+  document.getElementById('modal-title').textContent=id?'✏ Editar lead':'➕ Nuevo lead';
+  document.getElementById('f-nombre').value=l?l.nombre:'';
+  document.getElementById('f-telefono').value=l?l.telefono:'';
+  document.getElementById('f-email').value=l?l.email:'';
+  document.getElementById('f-tipo').value=l?l.tipo:'';
+  document.getElementById('f-localidad').value=l?l.localidad:'';
+  document.getElementById('f-ccaa').value=l?l.ccaa||'':'';
+  document.getElementById('f-canal').value=l?l.canal:'Meta';
+  document.getElementById('f-estado').value=l?l.estado:'Nuevo';
+  document.getElementById('f-resp').value=l?l.resp||'Sin contactar':'Sin contactar';
+  document.getElementById('f-ppto').value=l?l.ppto:'Sin enviar';
+  document.getElementById('f-notas').value=l?l.notas:'';
+  if(l){ selectedShows=[...(l.shows||[])]; selectedDates=[...(l.fechas||[])]; }
+  renderShowSelector(); renderDates();
+  document.getElementById('btn-del').style.display=id?'':'none';
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('f-nombre').focus(),100);
+}
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); editId=null; }
+function closeModalOutside(e){ if(e.target===document.getElementById('modal-overlay'))closeModal(); }
+
+async function saveLead(){
+  if(isSaving)return;
+  const nombre=document.getElementById('f-nombre').value.trim();
+  const tipo=document.getElementById('f-tipo').value;
+  if(!nombre){ showToast('⚠️ El nombre es obligatorio','error'); return; }
+  if(!tipo){ showToast('⚠️ Selecciona el tipo de evento','error'); return; }
+  if(!selectedShows.length){ showToast('⚠️ Selecciona al menos un espectáculo','error'); return; }
+
+  const now=new Date().toISOString();
+  const lead={
+    id:editId||('lead_'+Date.now()),
+    nombre,
+    telefono:document.getElementById('f-telefono').value.trim(),
+    email:document.getElementById('f-email').value.trim(),
+    tipo,
+    localidad:document.getElementById('f-localidad').value.trim(),
+    ccaa:document.getElementById('f-ccaa').value,
+    canal:document.getElementById('f-canal').value,
+    estado:document.getElementById('f-estado').value,
+    resp:document.getElementById('f-resp').value,
+    ppto:document.getElementById('f-ppto').value,
+    shows:[...selectedShows],
+    fechas:[...selectedDates],
+    notas:document.getElementById('f-notas').value.trim(),
+    updatedAt:now,
+    createdAt:editId?(leads.find(l=>l.id===editId)||{}).createdAt||now:now,
+  };
+
+  // Optimistic update — instant UI response
+  if(editId){ const i=leads.findIndex(l=>l.id===editId); if(i>=0)leads[i]=lead; }
+  else leads.unshift(lead);
+  saveCache(); closeModal(); renderAll();
+
+  isSaving=true;
+  const btn=document.getElementById('btn-save');
+  if(btn){ btn.disabled=true; btn.textContent='Guardando…'; }
+
+  if(scriptUrl){
+    try{
+      const action=editId?'updateLead':'addLead';
+      const ctrl=new AbortController();
+      const tid=setTimeout(()=>ctrl.abort(),14000);
+      const res=await fetch(scriptUrl,{method:'POST',body:JSON.stringify({action,lead}),signal:ctrl.signal});
+      clearTimeout(tid);
+      const data=await res.json();
+      if(data.ok){
+        setSyncStatus('ok','Sync · '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}));
+        showToast('✅ Guardado y sincronizado','success');
+      } else { showToast('⚠️ Local ok, sync falló: '+(data.error||''),'error'); setSyncStatus('error','Error sync'); }
+    } catch(e){
+      showToast('⚠️ Guardado local. Sin conexión.','error'); setSyncStatus('error','Sin conexión');
+    }
+  } else {
+    showToast('✅ Guardado localmente','success');
+  }
+  isSaving=false;
+  if(btn){ btn.disabled=false; btn.textContent='Guardar lead'; }
+}
+
+async function deleteLead(){
+  if(!editId||!confirm('¿Eliminar este lead?'))return;
+  const idDel=editId;
+  leads=leads.filter(l=>l.id!==idDel);
+  saveCache(); closeModal(); renderAll();
+  if(scriptUrl){
+    try{
+      const res=await fetch(scriptUrl,{method:'POST',body:JSON.stringify({action:'deleteLead',lead:{id:idDel}})});
+      const d=await res.json();
+      showToast(d.ok?'🗑 Eliminado y sincronizado':'🗑 Eliminado local, sync falló','success');
+    } catch(e){ showToast('🗑 Eliminado local. Sin conexión.','success'); }
+  } else { showToast('🗑 Lead eliminado','success'); }
+}
+
+// ─── FICHA ────────────────────────────────────────────────────
+function openFicha(id){
+  const l=leads.find(x=>x.id===id); if(!l)return;
+  fichaId=id;
+  document.getElementById('ficha-nombre').textContent=l.nombre;
+  const canalKey=(l.canal||'').replace(/\s/g,'');
+  document.getElementById('ficha-badges').innerHTML=
+    `<span class="badge ${ESTADO_CLS[l.estado]||''}">${l.estado||'—'}</span>
+     <span class="badge ${PPTO_CLS[l.ppto]||''}">💰 ${l.ppto||'—'}</span>
+     <span class="badge canal-${canalKey}"><span class="badge-dot"></span>${l.canal||'—'}</span>`;
+  const showNames=(l.shows||[]).map(sid=>{const s=SHOWS.find(x=>x.id===sid);return s?`${s.icon} ${s.name}`:sid;});
+  const respVal=l.resp||'Sin contactar';
+  const respBadge=`<span class="badge ${RESP_CLS[respVal]||''}">${respVal==='Sin respuesta'?'📵 Sin respuesta':respVal==='Respondió ✓'?'✅ Respondió':'Sin contactar aún'}</span>`;
+  let body='';
+  if(respVal==='Sin respuesta'){
+    body+=`<div style="background:#2d141444;border:1px solid #ef444444;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.3rem">📵</span>
+      <div><div style="font-size:.68rem;color:#ef4444;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Sin respuesta</div>
+      <div style="font-size:.82rem;color:var(--text)">Mensaje enviado pero nunca respondió</div></div></div>`;
+  }
+  body+=`<div class="ficha-section"><div class="ficha-section-title">Contacto</div><div class="ficha-grid">
+    <div class="ficha-field"><div class="ficha-field-label">Teléfono</div><div class="ficha-field-value">${l.telefono?`<a href="tel:${l.telefono}">${l.telefono}</a>`:'—'}</div></div>
+    <div class="ficha-field"><div class="ficha-field-label">Email</div><div class="ficha-field-value">${l.email?`<a href="mailto:${l.email}">${l.email}</a>`:'—'}</div></div>
+    <div class="ficha-field full"><div class="ficha-field-label">Respuesta del lead</div><div class="ficha-field-value">${respBadge}</div></div>
+  </div></div>`;
+  body+=`<div class="ficha-section"><div class="ficha-section-title">Evento</div><div class="ficha-grid">
+    <div class="ficha-field"><div class="ficha-field-label">Tipo</div><div class="ficha-field-value">${l.tipo||'—'}</div></div>
+    <div class="ficha-field"><div class="ficha-field-label">Localidad</div><div class="ficha-field-value">${l.localidad||'—'}</div></div>
+    <div class="ficha-field full"><div class="ficha-field-label">Comunidad Autónoma</div><div class="ficha-field-value">${l.ccaa||'—'}</div></div>
+    <div class="ficha-field full"><div class="ficha-field-label">Espectáculos</div><div class="ficha-field-value"><div class="shows-tags">${showNames.map(n=>`<span class="show-tag">${n}</span>`).join('')||'—'}</div></div></div>
+    <div class="ficha-field full"><div class="ficha-field-label">Fechas</div><div class="ficha-field-value"><div class="dates-tags">${(l.fechas||[]).map(d=>`<span class="date-chip">📅 ${fmtDate(d)}</span>`).join('')||'—'}</div></div></div>
+  </div></div>`;
+  if(l.notas) body+=`<div class="ficha-section"><div class="ficha-section-title">Notas</div><div class="ficha-notas">${l.notas}</div></div>`;
+  const cr=l.createdAt?new Date(l.createdAt).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}):'—';
+  body+=`<div style="font-size:.68rem;color:var(--muted);margin-top:8px">Creado el ${cr}</div>`;
+  document.getElementById('ficha-body').innerHTML=body;
+  document.getElementById('ficha-overlay').classList.add('open');
+}
+function closeFicha(){ document.getElementById('ficha-overlay').classList.remove('open'); fichaId=null; }
+function closeFichaOutside(e){ if(e.target===document.getElementById('ficha-overlay'))closeFicha(); }
+function editFromFicha(){ const id=fichaId; closeFicha(); setTimeout(()=>openModal(id),100); }
+
+// ─── FILTERS ──────────────────────────────────────────────────
+function getFiltered(){
+  const showF=document.getElementById('filter-show').value;
+  const canalF=document.getElementById('filter-canal').value;
+  const pptoF=document.getElementById('filter-ppto').value;
+  const tipoF=document.getElementById('filter-tipo').value;
+  const respF=document.getElementById('filter-resp').value;
+  const ccaaF=document.getElementById('filter-ccaa').value;
+  const q=document.getElementById('filter-search').value.toLowerCase();
+  return leads.filter(l=>{
+    if(showF&&!(l.shows||[]).includes(showF))return false;
+    if(canalF&&l.canal!==canalF)return false;
+    if(pptoF&&l.ppto!==pptoF)return false;
+    if(tipoF&&l.tipo!==tipoF)return false;
+    if(respF&&(l.resp||'Sin contactar')!==respF)return false;
+    if(ccaaF&&(l.ccaa||'')!==ccaaF)return false;
+    if(q&&!l.nombre.toLowerCase().includes(q)&&!(l.localidad||'').toLowerCase().includes(q))return false;
+    return true;
+  });
+}
+
+// ─── RENDER ───────────────────────────────────────────────────
+function renderAll(){
+  renderShowFilter();
+  renderBreakdown();
+  renderKPIs();
+  renderList();
+  updateZonaBanner();
+  document.getElementById('header-sub').textContent=
+    `${leads.length} lead${leads.length!==1?'s':''} · ${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}`;
+}
+
+function renderShowFilter(){
+  const sel=document.getElementById('filter-show');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Todos los shows</option>'+
+    SHOWS.map(s=>`<option value="${s.id}" ${cur===s.id?'selected':''}>${s.icon} ${s.name}</option>`).join('');
+}
+
+function renderBreakdown(){
+  const total=leads.length;
+  const activeF=document.getElementById('filter-show').value;
+  document.getElementById('shows-breakdown').innerHTML=SHOWS.map((s,i)=>{
+    const cnt=leads.filter(l=>(l.shows||[]).includes(s.id)).length;
+    const pct=total>0?Math.round(cnt/total*100):0;
+    const sel=activeF===s.id;
+    return `<div class="show-card ${sel?'sel':''}" onclick="toggleShowFilter('${s.id}')">
+      <div class="show-card-name">${s.icon} ${s.name}</div>
+      <div class="show-card-stats">${cnt} lead${cnt!==1?'s':''}</div>
+      <div class="show-card-bar-wrap"><div class="show-card-bar" style="width:${pct}%;background:${SHOW_COLORS[i]}"></div></div>
+    </div>`;
+  }).join('');
+}
+function toggleShowFilter(id){
+  const sel=document.getElementById('filter-show');
+  sel.value=sel.value===id?'':id; renderAll();
+}
+
+function renderKPIs(){
+  const f=getFiltered();
+  const env=f.filter(l=>l.ppto==='Enviado').length;
+  const acep=f.filter(l=>l.ppto==='Aceptado').length;
+  const sinresp=f.filter(l=>l.resp==='Sin respuesta').length;
+  const conv=f.length>0?Math.round(acep/f.length*100):null;
+  document.getElementById('kpi-total').textContent=f.length;
+  document.getElementById('kpi-sub').textContent=f.length!==leads.length?'(filtrado)':'en pipeline';
+  document.getElementById('kpi-env').textContent=env;
+  document.getElementById('kpi-acep').textContent=acep;
+  document.getElementById('kpi-sinresp').textContent=sinresp;
+  document.getElementById('kpi-conv').textContent=conv!==null?conv+'%':'—';
+}
+
+function showBadges(ids){
+  return (ids||[]).map(id=>{const s=SHOWS.find(x=>x.id===id);return s?`<span class="show-tag">${s.icon} ${s.name}</span>`:id;}).join(' ');
+}
+
+function renderList(){
+  const f=getFiltered();
+  const tbody=document.getElementById('leads-tbody');
+  const cards=document.getElementById('leads-cards');
+  const emptyMsg=leads.length===0?'Sin leads. Pulsa «+ Nuevo lead» para empezar.':'Sin resultados para los filtros aplicados.';
+  if(!f.length){
+    tbody.innerHTML=`<tr><td colspan="10" class="empty">${emptyMsg}</td></tr>`;
+    cards.innerHTML=`<div class="empty">${emptyMsg}</div>`;
+    return;
+  }
+  tbody.innerHTML=f.map(l=>{
+    const canalKey=(l.canal||'').replace(/\s/g,'');
+    const noReply=l.resp==='Sin respuesta';
+    const primFecha=(l.fechas||[])[0];
+    const moreF=(l.fechas||[]).length>1?` <span style="color:var(--muted2);font-size:.68rem">+${l.fechas.length-1}</span>`:'';
+    const primShow=(l.shows||[])[0];
+    const sObj=primShow?SHOWS.find(x=>x.id===primShow):null;
+    const moreS=(l.shows||[]).length>1?` <span style="color:var(--muted2);font-size:.68rem">+${l.shows.length-1}</span>`:'';
+    return `<tr class="${noReply?'no-reply':''}" onclick="openFicha('${l.id}')">
+      <td class="name">${l.nombre}</td>
+      <td><span class="badge ${RESP_CLS[l.resp||'Sin contactar']||''}">${l.resp==='Sin respuesta'?'📵 Sin resp.':l.resp==='Respondió ✓'?'✅ Respondió':'—'}</span></td>
+      <td style="color:var(--muted2);font-size:.75rem">${l.telefono||'—'}</td>
+      <td style="font-size:.75rem;color:var(--muted2)">${l.tipo||'—'}</td>
+      <td><span class="badge canal-${canalKey}"><span class="badge-dot"></span>${l.canal}</span></td>
+      <td>${sObj?`<span class="show-tag">${sObj.icon} ${sObj.name}</span>${moreS}`:'—'}</td>
+      <td style="font-size:.75rem;color:var(--muted2)">${primFecha?fmtDate(primFecha)+moreF:'—'}</td>
+      <td><span class="badge ${PPTO_CLS[l.ppto]||''}">${l.ppto||'—'}</span></td>
+      <td><span class="badge ${ESTADO_CLS[l.estado]||''}">${l.estado||'—'}</span></td>
+      <td style="font-size:.75rem;color:var(--muted2)">${l.localidad||'—'}${l.ccaa?'<br><span style="font-size:.65rem;color:var(--muted)">'+l.ccaa+'</span>':''}</td>
+    </tr>`;
+  }).join('');
+  cards.innerHTML=f.map(l=>{
+    const canalKey=(l.canal||'').replace(/\s/g,'');
+    const noReply=l.resp==='Sin respuesta';
+    const primFecha=(l.fechas||[])[0];
+    return `<div class="lead-card ${noReply?'no-reply':''}" onclick="openFicha('${l.id}')">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${l.nombre}</div>
+          <div class="card-sub">${l.tipo||''} ${l.localidad?'· '+l.localidad:''} ${l.ccaa?'('+l.ccaa+')':''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <span class="badge ${ESTADO_CLS[l.estado]||''}">${l.estado}</span>
+          ${noReply?'<span class="badge resp-Sin_respuesta">📵 Sin resp.</span>':''}
+        </div>
+      </div>
+      <div class="card-badges">${showBadges(l.shows)}</div>
+      <div class="card-bottom">
+        <span class="badge canal-${canalKey}"><span class="badge-dot"></span>${l.canal}</span>
+        <span class="badge ${PPTO_CLS[l.ppto]||''}">${l.ppto}</span>
+        <span style="color:var(--muted2)">${primFecha?'📅 '+fmtDate(primFecha):'Sin fecha'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── ZONA BANNER + CAMPAÑA ────────────────────────────────────
+function updateZonaBanner(){
+  const ccaaF=document.getElementById('filter-ccaa').value;
+  const banner=document.getElementById('zona-banner');
+  if(!ccaaF){banner.classList.remove('visible');return;}
+  const inZone=leads.filter(l=>(l.ccaa||'')===ccaaF);
+  const conTel=inZone.filter(l=>l.telefono).length;
+  banner.classList.add('visible');
+  document.getElementById('zona-banner-title').textContent=`📍 ${ccaaF} — ${inZone.length} contacto${inZone.length!==1?'s':''}`;
+  document.getElementById('zona-banner-sub').textContent=`${conTel} con teléfono · Genera una campaña de WhatsApp para esta zona`;
+}
+
+function openCampana(){
+  const ccaaF=document.getElementById('filter-ccaa').value;
+  if(!ccaaF){showToast('Selecciona una CCAA en los filtros primero','error');return;}
+  const contacts=leads.filter(l=>(l.ccaa||'')===ccaaF);
+  document.getElementById('campana-desc').textContent=
+    `${contacts.length} contacto${contacts.length!==1?'s':''} en ${ccaaF}. ${contacts.filter(l=>l.telefono).length} con teléfono.`;
+  document.getElementById('campana-contacts').innerHTML=contacts.map(l=>`
+    <div class="campana-contact">
+      <div><div class="campana-contact-name">${l.nombre}</div>
+      <div class="campana-contact-phone">${l.telefono||'Sin teléfono'} · ${l.localidad||''}</div></div>
+      <span class="badge ${RESP_CLS[l.resp||'Sin contactar']||''} campana-contact-resp">${l.resp==='Sin respuesta'?'📵':l.resp==='Respondió ✓'?'✅':'·'}</span>
+    </div>`).join('');
+  const shows=contacts.flatMap(l=>l.shows||[]);
+  const sc={};
+  shows.forEach(s=>{sc[s]=(sc[s]||0)+1;});
+  const top=Object.entries(sc).sort((a,b)=>b[1]-a[1])[0];
+  const topName=top?SHOWS.find(x=>x.id===top[0])?.name||top[0]:'nuestros espectáculos';
+  document.getElementById('campana-msg').value=
+`¡Hola [nombre]! 👋
+
+Soy Fernando, de El Sindicato de Monstruos. Te escribo porque el próximo año actuaremos en ${ccaaF} y me acordé de ti.
+
+Estaremos en la zona con ${topName} y otros espectáculos. Si tienes algún evento, festival o cabalgata en mente, sería perfecto.
+
+¿Hablamos? 🎭`;
+  document.getElementById('campana-overlay').classList.add('open');
+}
+function closeCampana(){ document.getElementById('campana-overlay').classList.remove('open'); }
+function closeCampanaOutside(e){ if(e.target===document.getElementById('campana-overlay'))closeCampana(); }
+function copyMsgTemplate(){
+  navigator.clipboard.writeText(document.getElementById('campana-msg').value)
+    .then(()=>showToast('✅ Plantilla copiada','success')).catch(()=>showToast('No se pudo copiar','error'));
+}
+function copyAllMessages(){
+  const ccaaF=document.getElementById('filter-ccaa').value;
+  const contacts=leads.filter(l=>(l.ccaa||'')===ccaaF&&l.telefono);
+  const template=document.getElementById('campana-msg').value;
+  if(!contacts.length){showToast('Ningún contacto con teléfono en esta zona','error');return;}
+  const all=contacts.map(l=>{
+    const msg=template.replace(/\[nombre\]/gi,l.nombre.split(' ')[0]);
+    return `👤 ${l.nombre} · ${l.telefono}\n${msg}`;
+  }).join('\n\n────────────────────\n\n');
+  navigator.clipboard.writeText(all)
+    .then(()=>showToast(`✅ ${contacts.length} mensajes copiados`,'success'))
+    .catch(()=>showToast('No se pudo copiar','error'));
+}
+
+// ─── EXPORT CSV ───────────────────────────────────────────────
+function exportCSV(){
+  if(!leads.length){showToast('Sin datos para exportar','error');return;}
+  const headers=['Nombre','Teléfono','Email','Tipo evento','Localidad','CCAA','Canal','Estado','Respuesta','Presupuesto','Espectáculos','Fechas','Notas','Creado'];
+  const rows=leads.map(l=>[
+    l.nombre,l.telefono,l.email,l.tipo,l.localidad,l.ccaa||'',l.canal,l.estado,
+    l.resp||'Sin contactar',l.ppto,
+    (l.shows||[]).map(id=>{const s=SHOWS.find(x=>x.id===id);return s?s.name:id;}).join(' | '),
+    (l.fechas||[]).join(' | '),
+    (l.notas||'').replace(/\n/g,' '),
+    l.createdAt?new Date(l.createdAt).toLocaleDateString('es-ES'):''
+  ].map(v=>`"${String(v||'').replace(/"/g,'""')}"`));
+  const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download=`sdm_leads_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('✅ CSV exportado','success');
+}
+
+// ─── TOAST ────────────────────────────────────────────────────
+let _tt;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='show '+type;
+  clearTimeout(_tt); _tt=setTimeout(()=>t.className='',3500);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+(function init(){
+  if(scriptUrl){
+    document.getElementById('setup-banner').classList.add('hidden');
+    loadLeads();
+  } else {
+    setSyncStatus('error','Sin conectar');
+    leads=readCache(); renderAll();
+  }
+})();
+
+</script>
+</body>
+</html>
