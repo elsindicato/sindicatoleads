@@ -216,7 +216,7 @@ label{font-size:.7rem;color:var(--muted2);font-weight:500;text-transform:upperca
   <h2>🔗 Conectar con Google Sheets</h2>
   <p>Pega la URL de tu Google Apps Script para sincronizar los leads en la nube y acceder desde cualquier dispositivo.</p>
   <div class="setup-row">
-    <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/…/exec">
+    <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/…/exec" id="script-url-input">
     <button class="btn btn-gold" onclick="saveScriptUrl()">Conectar</button>
   </div>
 </div>
@@ -226,7 +226,7 @@ label{font-size:.7rem;color:var(--muted2);font-weight:500;text-transform:upperca
   <h2>🔗 Conectar con Google Sheets</h2>
   <p>Pega la URL de tu Apps Script para sincronizar en la nube y usar la app desde el móvil u otro dispositivo.</p>
   <div class="setup-row">
-    <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/…/exec">
+    <input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/…/exec" id="script-url-input">
     <button class="btn btn-gold" onclick="saveScriptUrl()">Conectar</button>
   </div>
 </div>
@@ -542,8 +542,8 @@ function setSyncStatus(state, text){
 // ─── SETUP ────────────────────────────────────────────────────
 function saveScriptUrl(){
   const val=document.getElementById('script-url-input').value.trim();
-  if(!val.startsWith('https://script.google.com')){
-    showToast('URL inválida','error'); return;
+  if(!val.includes('script.google.com')||!val.includes('/exec')){
+    showToast('URL inválida — debe terminar en /exec','error'); return;
   }
   scriptUrl=val;
   localStorage.setItem(LS_KEY_SCRIPT,scriptUrl);
