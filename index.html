@@ -542,9 +542,7 @@ function setSyncStatus(state, text){
 // ─── SETUP ────────────────────────────────────────────────────
 function saveScriptUrl(){
   const val=document.getElementById('script-url-input').value.trim();
-  if(!val.includes('script.google.com')||!val.includes('/exec')){
-    showToast('URL inválida — debe terminar en /exec','error'); return;
-  }
+  if(!val){ showToast('Pega la URL primero','error'); return; }
   scriptUrl=val;
   localStorage.setItem(LS_KEY_SCRIPT,scriptUrl);
   document.getElementById('setup-banner').classList.add('hidden');
